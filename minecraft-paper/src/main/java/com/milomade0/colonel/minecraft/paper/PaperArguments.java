@@ -110,23 +110,36 @@ public class PaperArguments {
                 .toList();
     }
 
-    // SOUND
+// SOUND
 
     @Parser(value = "sound", type = Sound.class)
     public Object soundParser(@Source CommandSender source, @Input String input) {
-        Sound sound = Arrays.stream(Sound.values())
-                .filter(s -> s.getKey().toString().equals(input))
-                .findFirst().orElse(null);
+        Sound sound = Registry.SOUNDS.stream()
+                .filter(s -> {
+                    NamespacedKey key = Registry.SOUNDS.getKey(s);
+                    return key != null && key.asString().equalsIgnoreCase(input);
+                })
+                .findFirst()
+                .orElse(null);
+
         if (sound != null) {
             return sound;
         }
-        return FailureHandler.of(() -> colonel.sendMessage(source, "cmderr.args.sound-not-found", ChatColor.RED + "Sound not found: {0}", input));
+
+        return FailureHandler.of(() -> colonel.sendMessage(
+                source,
+                "cmderr.args.sound-not-found",
+                ChatColor.RED + "Sound not found: {0}",
+                input
+        ));
     }
 
     @Completer(value = "sound", type = Sound.class)
     public List<String> soundCompleter() {
-        return Arrays.stream(Sound.values())
-                .map(Enum::name)
+        return Registry.SOUNDS.stream()
+                .map(Registry.SOUNDS::getKey)
+                .filter(java.util.Objects::nonNull)
+                .map(NamespacedKey::asString)
                 .toList();
     }
 
