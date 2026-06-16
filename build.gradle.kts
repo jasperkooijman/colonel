@@ -3,7 +3,7 @@ plugins {
     `maven-publish`
 }
 
-group = "com.milomade0"
+group = "com.milomade0.colonel"
 version = "1.0.0-SNAPSHOT"
 
 repositories {
@@ -19,18 +19,16 @@ subprojects {
 
     repositories {
         mavenCentral()
+
         maven {
-
             name = "papermc"
-
             url = uri("https://repo.papermc.io/repository/maven-public/")
-
         }
     }
 
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(21))
+            languageVersion.set(JavaLanguageVersion.of(25))
         }
 
         withSourcesJar()
@@ -59,8 +57,8 @@ subprojects {
             create<MavenPublication>("mavenJava") {
                 from(components["java"])
 
-                groupId = "com.milomade0"
-                artifactId = "colonel-${project.name}"
+                groupId = rootProject.group.toString()
+                artifactId = project.name
                 version = project.version.toString()
             }
         }
