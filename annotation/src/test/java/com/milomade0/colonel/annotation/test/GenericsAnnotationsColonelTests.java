@@ -1,0 +1,128 @@
+package com.milomade0.colonel.annotation.test;
+
+import com.milomade0.colonel.annotation.AnnotationColonel;
+import com.milomade0.colonel.annotation.annotations.Command;
+import com.milomade0.colonel.annotation.annotations.Parser;
+import com.milomade0.colonel.annotation.annotations.parameter.Input;
+import com.milomade0.colonel.annotation.annotations.parameter.Parameter;
+import com.milomade0.colonel.annotation.annotations.parameter.Source;
+import com.milomade0.colonel.annotation.test.util.Person;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class GenericsAnnotationsColonelTests {
+
+    private final Person person = new Person("John Doe", 10);
+    private final AnnotationColonel<Person> colonel = new AnnotationColonel<>(Person.class);
+
+    @Test
+    public void singleGenericParameter() {
+        assertThrows(RuntimeException.class, () -> {
+            colonel.registerAll(new Object() {
+                @Command("addage")
+                public <T> void addage(@Source Person person, @Parameter T amount) {
+                    person.setAge(person.age() + (int) amount);
+                }
+            });
+        });
+    }
+
+    @Test
+    public void singleGenericParameterWrongNameParser() {
+        assertThrows(RuntimeException.class, () -> {
+            colonel.registerAll(new Object() {
+                @Parser
+                public int integer(String input) {
+                    return Integer.parseInt(input);
+                }
+
+                @Command("addage")
+                public <T> void addage(@Source Person person, @Parameter T amount) {
+                    person.setAge(person.age() + (int) amount);
+                }
+            });
+        });
+    }
+
+    @Test
+    public void singleGenericParameterCorrectNameParser() {
+        colonel.registerAll(new Object() {
+            @Parser
+            public int amount(@Input String input) {
+                return Integer.parseInt(input);
+            }
+
+            @Command("addage")
+            public <T> void addage(@Source Person person, @Parameter T amount) {
+                person.setAge(person.age() + (int) amount);
+            }
+        });
+
+        colonel.dispatch(person, "addage 5");
+        assertEquals(15, person.age());
+    }
+
+    @Test
+    public void singleGenericSourceNoMapper() {
+        colonel.registerAll(new Object() {
+            @Command("addage")
+            public <T> void addage(@Source Person person, @Source T amount) {
+                person.setAge(person.age() + (int) amount);
+            }
+        });
+
+        assertThrows(RuntimeException.class, () -> {
+            colonel.dispatch(person, "addage 5");
+        });
+    }
+
+    @Test
+    public void singleGenericSourceWithMapper() {
+        colonel.registry().registerSourceMapper(Integer.class, "age", Person::age);
+
+        colonel.registerAll(new Object() {
+            @Command("addage")
+            public <T> void addage(@Source T age, @Parameter int amount) {
+                person.setAge((int) age + amount);
+            }
+        });
+
+        assertThrows(RuntimeException.class, () -> {
+            colonel.dispatch(person, "addage 5");
+        });
+    }
+
+    @Test
+    public void singleGenericSourceWithMapperSpecificName() {
+        colonel.registry().registerSourceMapper(Integer.class, "age", Person::age);
+
+        colonel.registerAll(new Object() {
+            @Command("addage")
+            public <T> void addage(@Source("age") T num, @Parameter int amount) {
+                person.setAge((int) num + amount);
+            }
+        });
+
+        assertDoesNotThrow(() -> {
+            colonel.dispatch(person, "addage 5");
+        });
+    }
+
+    @Test
+    public void complexGenericSourceWithMapper() {
+        colonel.registry().registerSourceMapper(Integer.class, "age", Person::age);
+
+        colonel.registerAll(new Object() {
+            @Command("addage")
+            public <T extends Number & Comparable<T>> void addage(@Source T age, @Parameter int amount) {
+                person.setAge((Integer) age + amount);
+            }
+        });
+
+        assertDoesNotThrow(() -> {
+            colonel.dispatch(person, "addage 5");
+        });
+    }
+
+}

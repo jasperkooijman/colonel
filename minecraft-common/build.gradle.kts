@@ -1,0 +1,5 @@
+dependencies {
+    api(project(":annotation"))
+
+    api("net.kyori:adventure-api:4.+")
+}
