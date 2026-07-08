@@ -20,6 +20,21 @@ public final class CommandTree {
 
     //
 
+    public boolean available(Object source, String root) {
+        return nodes.stream()
+                .filter(node -> node.name().equalsIgnoreCase(root))
+                .findFirst()
+                .map(node -> available(source, node))
+                .orElse(false);
+    }
+
+    private boolean available(Object source, CommandTreeNode node) {
+        return node.handlers().stream().anyMatch(handler -> handler.available(source))
+                || node.children().stream().anyMatch(child -> available(source, child));
+    }
+
+    //
+
     public void register(String path, CommandHandler handler) {
         if (path.length() == 0) {
             throw new IllegalArgumentException("The path must not be empty.");

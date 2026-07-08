@@ -82,6 +82,12 @@ public class Colonel<S> {
 
     //
 
+    public boolean available(S source, String root) {
+        return tree.available(source, root);
+    }
+
+    //
+
     public List<Suggestion> suggestions(S source, String input) {
         return tree.suggestions(source, input, input.length());
     }

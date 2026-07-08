@@ -26,6 +26,11 @@ public final class VelocityCommand implements SimpleCommand {
                 .toList();
     }
 
+    @Override
+    public boolean hasPermission(Invocation invocation) {
+        return colonel.available(invocation.source(), invocation.alias());
+    }
+
     private String input(Invocation invocation) {
         String[] arguments = invocation.arguments();
         return arguments.length == 0 ? invocation.alias() : invocation.alias() + " " + String.join(" ", arguments);
