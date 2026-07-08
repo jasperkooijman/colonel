@@ -23,10 +23,18 @@ public class PaperCommand extends Command {
         return true;
     }
 
+    @Override
+    public boolean testPermissionSilent(@NotNull CommandSender target) {
+        return colonel.available(target, getName());
+    }
+
     @NotNull
     @Override
     public List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
-        String input = args.length == 0 ? getName() : getName() + " " + String.join(" ", args);
+        if (!testPermissionSilent(sender)) {
+            return List.of();
+        }
+        String input = args.length == 0 ? getName() + " " : getName() + " " + String.join(" ", args);
         return colonel.suggestions(sender, input).stream().map(Suggestion::value).toList();
     }
 }

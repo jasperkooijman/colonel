@@ -24,9 +24,11 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -38,6 +40,7 @@ public class PaperColonel extends MinecraftColonel<CommandSender> {
 
     private final SimpleCommandMap commandMap;
     private BiConsumer<CommandSender, CommandFailure> errorHandler;
+    private final Map<String, List<CommandHandler>> rootHandlers = new HashMap<>();
 
     record RegisteredCommand(@NotNull String path, @NotNull CommandHandler handler, @NotNull PaperCommand command) {
     }
@@ -81,6 +84,7 @@ public class PaperColonel extends MinecraftColonel<CommandSender> {
 
         for ( String path : paths ) {
             String firstLiteral = path.split(" ")[0];
+            rootHandlers.computeIfAbsent(firstLiteral.toLowerCase(), key -> new ArrayList<>()).add(handler);
             PaperCommand cmd = commands.stream()
                     .filter(c -> (c.path() + " ").startsWith(firstLiteral + " "))
                     .map(c -> c.command)
@@ -127,6 +131,13 @@ public class PaperColonel extends MinecraftColonel<CommandSender> {
             handle(source, failure);
         }
         return List.of();
+    }
+
+    //
+
+    public boolean available(CommandSender source, String root) {
+        return rootHandlers.getOrDefault(root.toLowerCase(), List.of()).stream()
+                .anyMatch(handler -> handler.available(source));
     }
 
     //
