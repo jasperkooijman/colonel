@@ -33,7 +33,7 @@ public class VelocityColonel extends MinecraftColonel<CommandSource> {
     private final ProxyServer proxyServer;
     private final Object plugin;
     private final CommandManager commandManager;
-    private final Map<String, VelocityCommand> commands = new HashMap<>();
+    private final Map<String, CommandMeta> commands = new HashMap<>();
 
     private @Nullable BiConsumer<CommandSource, CommandFailure> errorHandler;
     private @Nullable VelocityLocalizer localizer;
@@ -74,7 +74,7 @@ public class VelocityColonel extends MinecraftColonel<CommandSource> {
                     .plugin(plugin)
                     .build();
             commandManager.register(meta, command);
-            commands.put(firstLiteral, command);
+            commands.put(firstLiteral, meta);
         }
     }
 
@@ -122,6 +122,11 @@ public class VelocityColonel extends MinecraftColonel<CommandSource> {
 
     public void setLocalizer(@Nullable VelocityLocalizer localizer) {
         this.localizer = localizer;
+    }
+
+    public void unregisterAll() {
+        commands.values().forEach(commandManager::unregister);
+        commands.clear();
     }
 
     private void handle(CommandSource source, CommandFailure failure) {
