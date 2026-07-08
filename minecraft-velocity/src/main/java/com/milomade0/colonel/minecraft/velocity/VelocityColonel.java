@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ public class VelocityColonel extends MinecraftColonel<CommandSource> {
     private final Object plugin;
     private final CommandManager commandManager;
     private final Map<String, CommandMeta> commands = new HashMap<>();
+    private final Map<String, List<CommandHandler>> rootHandlers = new HashMap<>();
 
     private @Nullable BiConsumer<CommandSource, CommandFailure> errorHandler;
     private @Nullable VelocityLocalizer localizer;
@@ -65,6 +67,7 @@ public class VelocityColonel extends MinecraftColonel<CommandSource> {
 
         for (String path : paths) {
             String firstLiteral = path.split(" ")[0];
+            rootHandlers.computeIfAbsent(firstLiteral.toLowerCase(), key -> new ArrayList<>()).add(handler);
             if (commands.containsKey(firstLiteral)) {
                 continue;
             }
@@ -112,6 +115,11 @@ public class VelocityColonel extends MinecraftColonel<CommandSource> {
         return List.of();
     }
 
+    public boolean available(CommandSource source, String root) {
+        return rootHandlers.getOrDefault(root.toLowerCase(), List.of()).stream()
+                .anyMatch(handler -> handler.available(source));
+    }
+
     public ProxyServer proxyServer() {
         return proxyServer;
     }
@@ -127,6 +135,7 @@ public class VelocityColonel extends MinecraftColonel<CommandSource> {
     public void unregisterAll() {
         commands.values().forEach(commandManager::unregister);
         commands.clear();
+        rootHandlers.clear();
     }
 
     private void handle(CommandSource source, CommandFailure failure) {
