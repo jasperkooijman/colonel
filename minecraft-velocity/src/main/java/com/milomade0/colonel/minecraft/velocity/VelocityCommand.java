@@ -21,7 +21,7 @@ public final class VelocityCommand implements SimpleCommand {
 
     @Override
     public List<String> suggest(Invocation invocation) {
-        return colonel.suggestions(invocation.source(), input(invocation)).stream()
+        return colonel.suggestions(invocation.source(), suggestionInput(invocation)).stream()
                 .map(Suggestion::value)
                 .toList();
     }
@@ -29,5 +29,10 @@ public final class VelocityCommand implements SimpleCommand {
     private String input(Invocation invocation) {
         String[] arguments = invocation.arguments();
         return arguments.length == 0 ? invocation.alias() : invocation.alias() + " " + String.join(" ", arguments);
+    }
+
+    private String suggestionInput(Invocation invocation) {
+        String[] arguments = invocation.arguments();
+        return arguments.length == 0 ? invocation.alias() + " " : invocation.alias() + " " + String.join(" ", arguments);
     }
 }
