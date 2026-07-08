@@ -68,7 +68,7 @@ public final class CommandTree {
         if (cursor > input.length()) {
             throw new IllegalArgumentException("The cursor must not exceed the input length.");
         }
-        return suggestions(source, input.split(SPACE), cursor, nodes);
+        return suggestions(source, input.split(SPACE, -1), cursor, nodes);
     }
 
     private List<Suggestion> suggestions(Object source, String[] input, int cursor, List<CommandTreeNode> nodes) {
